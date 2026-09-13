@@ -1,0 +1,45 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
+
+const formatDate = (date: Date) => new Intl.DateTimeFormat('ru-RU', {
+  day: 'numeric', month: 'long', year: 'numeric',
+}).format(date);
+---
+
+<BaseLayout>
+  <section class="intro">
+    <p class="eyebrow">Личный блог</p>
+    <h1>Заметки о том, что мне интересно.</h1>
+    <p>Технологии, работа и маленькие находки, которые не хочется терять.</p>
+  </section>
+
+  <section aria-label="Последние заметки">
+    <ol class="posts">
+      {posts.map((post) => (
+        <li>
+          <article>
+            <time datetime={post.data.publishedAt.toISOString()}>{formatDate(post.data.publishedAt)}</time>
+            <h2><a href={`/blog/${post.id}/`}>{post.data.title}</a></h2>
+            <p>{post.data.description}</p>
+          </article>
+        </li>
+      ))}
+    </ol>
+  </section>
+</BaseLayout>
+
+<style>
+  .intro { margin-bottom: 4rem; }
+  .eyebrow, time { color: #e4572e; font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .intro > p:last-child { max-width: 38rem; color: #5f5d58; font-size: 1.15rem; }
+  .posts { list-style: none; margin: 0; padding: 0; }
+  .posts li { border-top: 1px solid #dedbd4; padding: 1.75rem 0; }
+  .posts h2 { margin: .35rem 0 .5rem; font-size: clamp(1.35rem, 4vw, 2rem); }
+  .posts h2 a { text-decoration: none; }
+  .posts h2 a:hover { text-decoration: underline; }
+  .posts p { margin: 0; color: #5f5d58; }
+</style>

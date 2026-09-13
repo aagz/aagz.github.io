@@ -1,0 +1,33 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const date = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(post.data.publishedAt);
+---
+
+<BaseLayout title={`${post.data.title} — aagz`} description={post.data.description}>
+  <article class="post">
+    <a class="back" href="/">← Все заметки</a>
+    <header>
+      <time datetime={post.data.publishedAt.toISOString()}>{date}</time>
+      <h1>{post.data.title}</h1>
+      <p>{post.data.description}</p>
+    </header>
+    <Content />
+  </article>
+</BaseLayout>
+
+<style>
+  .back { display: inline-block; margin-bottom: 3rem; color: #5f5d58; font-size: .9rem; }
+  header { margin-bottom: 3rem; }
+  time { color: #e4572e; font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  header p { color: #5f5d58; font-size: 1.15rem; }
+  .post :global(img) { max-width: 100%; height: auto; }
+</style>
